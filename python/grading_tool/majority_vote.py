@@ -25,11 +25,12 @@ for file in files:
     data = [worksheet.cell_value(row, 2) for row in range(worksheet.nrows)]
     for index, value in enumerate(data):
         content = value.encode('ascii','ignore').lower()
-        if 'n' in content:
-            data_map[index] -= 1
-        elif 'y' in content:
-           data_map[index] += 1
-        data_map[-index] += 1
+        if content:
+            if 'n' in content:
+                data_map[index] -= 1
+            elif 'y' in content:
+                data_map[index] += 1
+            data_map[-index] += 1
 
 result = xlwt.Workbook()
 worksheet = result.add_sheet("Combined Sheet")
@@ -43,7 +44,7 @@ for index in range(1, len(data_map)):
     relevant = 'Yes (' + str(num_totalAnswer - num_totalVoteNo) + '/' + str(num_totalAnswer) + ')'
     if data_map[current_key] < 0:
         relevant = 'No (' + str(num_totalVoteNo) + '/' + str(num_totalAnswer) + ')' 
-    
+
     if abs(data_map[current_key]) <= 3:
         relevant += ' (Talk)'
     worksheet.write(data_map.keys()[index], 4, relevant)
