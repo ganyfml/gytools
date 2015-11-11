@@ -7,7 +7,7 @@ def notice_thoughEmail():
     server = smtplib.SMTP( "smtp.gmail.com", 587 )
     server.ehlo()
     server.starttls()
-    server.login( 'gany.fml@gmail.com', 'Gyge199049#' )
+    server.login( 'email', 'password' )
     msg = MIMEText("Check driver license")
     sender = 'gany@gmail.com'
     recipients = ['6122981354@tmomail.net', '4696003238@txt.att.net']
