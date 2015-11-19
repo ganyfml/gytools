@@ -8,7 +8,7 @@ class smart_dict(dict):
 
 files = []
 week = raw_input("Which week you want to grade > ")
-path = "/home/gany/Desktop/Week " + week + "/"
+path = "~/Desktop/Week\ " + week + "/"
 result_path = path + 'Week ' + week + '.xlsx'
 
 if not os.path.exists(path):
