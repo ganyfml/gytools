@@ -8,8 +8,10 @@ class smart_dict(dict):
 
 files = []
 week = raw_input("Which week you want to grade > ")
-path = "/home/gany/Desktop/Week " + week + "/"
+path = "/Users/gany/Desktop/Week\ " + week + "/"
 result_path = path + 'Week ' + week + '.xlsx'
+
+print path
 
 if not os.path.exists(path):
     print "Folder not exist, program exit"
