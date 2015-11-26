@@ -4,7 +4,7 @@ import xlwt
 
 files = []
 week = raw_input("Which week you want to grade > ")
-path = "/home/gany/Desktop/Week " + week + "/"
+path = "~/Desktop/Week" + week + "/"
 result = xlwt.Workbook()
 result_sheet = result.add_sheet("Combined Sheet")
 
