@@ -20,7 +20,9 @@ if 'arraydesign' in result_json['experiments']['experiment']:
         platform = arraydesign['name']
     else:
         for design_index in range(len(array_design)):
-            platform += array_design[design_index]['name'] + "/"
+            platform += array_design[design_index]['name']
+            if design_index != len(array_design) - 1:
+                platform += ' / '
 else:
     platform = "Unknown"
 
