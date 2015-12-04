@@ -46,13 +46,20 @@ def write_oneTypeResult(number_result, result_json, type_result, file_write):
     else:
         for exp_id in range(number_result):
             data_set = result_json['experiments']['experiment'][exp_id]['accession']
-            platform = result_json['experiments']['experiment']['arraydesign']['name']
+            platform = 'Unkown'
+            if 'arraydesign' in result_json['experiments']['experiment'][exp_id]:
+                platform = ''
+                if not isinstance(result_json['experiments']['experiment'][exp_id]['arraydesign'],list):
+                    platform = result_json['experiments']['experiment'][exp_id]['arraydesign']['name']
+                else:
+                    for design_index in range(len(result_json['experiments']['experiment'][exp_id]['arraydesign'])):
+                        platform += result_json['experiments']['experiment'][exp_id]['arraydesign'][design_index]['name'] + "/"
             print_result = data_set + ',' + type_result + ',' + platform
             if is_superSeries(data_set) == True:
                 print_result += ",SuperSeries"
+            print_result = print_result.encode('ascii', 'ignore')
             file_write.write(print_result + "\n")
             file_write.write(',')
-
 
 def write_result(disease, result_arrayJSON, result_seqJSON, file_write):
     num_resultArray =  result_arrayJSON['experiments']['total'] 
