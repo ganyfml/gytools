@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+#The purpose for this program is getting the rare disease list from nih
+
 for i in {A..Z}
 do
   wget https://rarediseases.info.nih.gov/gard/browse-by-first-letter/"$i"
