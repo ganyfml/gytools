@@ -1,0 +1,22 @@
+"delete header, line 443 is
+"the first line of its content
+:1, 443g/./d
+"delete html format  
+:v/href/c
+"delete duplicate entry
+:g/See/d
+"delete footer
+:g/^ /d
+"clean format front
+:%s/<.*">//g
+"clean format end
+:%s/<.*//g
+"replace special html char code
+:%s/&#246;/ö/g
+:%s/&#233;/é/g
+:%s/&#232;/ß/g
+:%s/&#39;/'/g
+:%s/&#237;/Í/g
+:%s/&#235;/ë/g
+:%s/&#231;/ç/g
+:wq
