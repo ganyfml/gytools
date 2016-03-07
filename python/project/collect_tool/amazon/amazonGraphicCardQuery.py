@@ -16,21 +16,23 @@ def get_url_byPageNum(baseUrl, pageNum):
 def get_products_byUrl(url):
     base_page_html = requests.get(get_url_byPageNum(url, 1), headers = headers)
     soup = BeautifulSoup(base_page_html.text, "html.parser")
-    print type(soup)
     for page in range(1, 2):
         onepage = requests.get(get_url_byPageNum(url, page), headers = headers)
         soup = BeautifulSoup(onepage.text, "html.parser")
         products = soup.find_all("li", { "class" : "s-result-item  celwidget " })
         try:
             for product in products:
-                product_url = product.find('a', { 'class' : 'a-link-normal a-text-normal'})
-                print get_product_overview(requests.get(product_url['href'], headers = headers).text)
+                product_soup = BeautifulSoup(requests.get(product.find('a', { 'class' : 'a-link-normal a-text-normal'})['href'], headers = headers).text, "html.parser")
+                title = get_product_title(product_soup)
+                price = get_product_price(product_soup)
+                print title + ', ' + price
         except:
             pass
 
-def get_product_overview(product_body_html):
-        soup = BeautifulSoup(product_body_html, "html.parser")
-        print type(soup.find('span', { 'id' : 'productTitle' }))
-        return soup.find('span', { 'id' : 'productTitle' }).text
+def get_product_title(soup):
+    return soup.find('span', { 'id' : 'productTitle' }).text
+
+def get_product_price(soup):
+    return soup.find('span', { 'id' : 'priceblock_ourprice' }).text
 
 get_products_byUrl(amazon_url)
