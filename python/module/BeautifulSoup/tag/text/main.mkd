@@ -1,0 +1,15 @@
+#text
+
+Get the text content from a tag
+
+Assume you have a tag `tag` which has the below content
+
+```
+<span class="a-size-large" id="productTitle">EVGA GeForce GTX 970 4GB SSC Gaming ACX 2.0+ Cooling Graphics Card (04G-P4-3975-KR)</span></span>
+```
+
+To extract the text `EVGA GeForce GTX 970 4GB SSC Gaming ACX 2.0+ Cooling Graphics Card (04G-P4-3975-KR)` from it, you can do
+
+```
+tag.text
+```

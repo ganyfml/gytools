@@ -22,10 +22,13 @@ def get_products_byUrl(url):
         onepage = requests.get(get_url_byPageNum(url, page), headers = headers)
         soup = BeautifulSoup(onepage.text, "html.parser")
         products = soup.find_all("div", { "class" : "list-item" })
-        for product in products:
-            product_body_url = bestbuy_url + product['data-url']
-            product_body_html = requests.get(product_body_url, headers = headers).text
-            print product['data-name'] + ' : ' + get_product_overview(product_body_html)
+        try:
+            for product in products:
+                product_body_url = bestbuy_url + product['data-url']
+                product_body_html = requests.get(product_body_url, headers = headers).text
+                print product['data-name'] + ' : ' + get_product_overview(product_body_html)
+        except:
+            pass product['data-name']
 
 def get_product_overview(product_body_html):
         soup = BeautifulSoup(product_body_html, "html.parser")
