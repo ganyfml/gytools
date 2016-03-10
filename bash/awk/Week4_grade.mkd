@@ -1,0 +1,64 @@
+#ssanjhana15
+- Wrong question index: 21,
+- num of wrong: 1
+
+#due4605
+- Wrong question index: 2,9,11,13,14,15,16,17,18,23,
+- num of wrong: 10
+
+#rohan7293
+- Wrong question index: 18,21,23,
+- num of wrong: 3
+
+#andreanboot
+- Wrong question index: 
+- num of wrong: 0
+
+#rkpoon22
+- Wrong question index: 2,4,6,10,11,12,14,15,17,
+- num of wrong: 9
+
+#yyan33
+- Wrong question index: 
+- num of wrong: 0
+
+#lidaphd
+- Wrong question index: 4,6,11,16,17,23,
+- num of wrong: 6
+
+#zkossow
+- Wrong question index: 2,4,6,10,11,14,15,17,22,
+- num of wrong: 9
+
+#pradnyil
+- Wrong question index: 5,9,11,12,21,
+- num of wrong: 5
+
+#rsibi
+- Wrong question index: 21,
+- num of wrong: 1
+
+#apoorvamodali
+- Wrong question index: 21,
+- num of wrong: 1
+
+#anistrju
+- Wrong question index: 2,4,11,15,17,22,
+- num of wrong: 6
+
+#jarshea
+- Wrong question index: 2,4,9,15,17,21,
+- num of wrong: 6
+
+#cplant
+- Wrong question index: 6,12,16,
+- num of wrong: 3
+
+#sunnyma1990
+- Wrong question index: 6,15,16,17,20,
+- num of wrong: 5
+
+#pallav04
+- Wrong question index: 21,
+- num of wrong: 1
+
