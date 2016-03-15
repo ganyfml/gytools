@@ -1,0 +1,14 @@
+#BeautifulSoup
+
+The BeautifulSoup object itself represents the document as a whole
+
+```
+BeautifulSoup(html_body, parser)
+```
+
+Parser can be found:
+http://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-a-parser
+
+```
+soup = BeautifulSoup(base_page_html.text, "html.parser")
+```
