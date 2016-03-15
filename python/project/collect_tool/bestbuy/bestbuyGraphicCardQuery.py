@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import io
+
 import json
 import requests
 import sys
@@ -28,7 +30,13 @@ def get_products_byUrl(url):
             print product['data-name'] + ' : ' + get_product_overview(product_body_html)
 
 def get_product_overview(product_body_html):
-        soup = BeautifulSoup(product_body_html, "html.parser")
-        return soup.find('span', { 'class' : 'average-score' }).contents[0]
+    soup = BeautifulSoup(product_body_html, "html.parser")
+    ret = soup.find('span', { 'class' : 'average-score'})
+    try:
+        return ret.contents[0]
+    except:
+        f = io.open('temp.html', 'w+', encoding='utf8')
+        f.write(product_body_html)
+        exit()
 
 get_products_byUrl(bestbuy_graphicsCardURL)
