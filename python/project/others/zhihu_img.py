@@ -24,17 +24,17 @@ while offset < limits:
         'url_token': 37787176,
         'pagesize': page_size,
         'offset': offset
-    })
+        })
     data = {
-        '_xsrf': '',
-        'method': 'next',
-        'params': params
-    }
+            '_xsrf': '',
+            'method': 'next',
+            'params': params
+            }
     header = {
-        'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:34.0) Gecko/20100101 Firefox/34.0",
-        'Host': "www.zhihu.com",
-        'Referer': url
-    }
+            'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:34.0) Gecko/20100101 Firefox/34.0",
+            'Host': "www.zhihu.com",
+            'Referer': url
+            }
     response = requests.post(post_url, data=data, headers=header)
     answer_list = response.json()["msg"]
     img_urls = re.findall('img .*?src="(.*?_b.*?)"', ''.join(answer_list))
