@@ -18,9 +18,12 @@ def get_full_list(search_term, length):
 		full_list = ET.fromstring(result).findall('.//Id')
 		return full_list
 
+def main(search_term):
+		num_paper = get_list_length(search_term)
+		papers_id = get_full_list(search_term, num_paper)
+		with open(search_term + '.list', 'w+') as output:
+				for p in papers_id:
+						output.write(p.text + '\n')
+
 search_term = str(sys.argv[1])
-num_paper = get_list_length(search_term)
-papers_id = get_full_list(search_term, num_paper)
-with open(search_term + '.list', 'w+') as output:
-		for p in papers_id:
-				output.write(p.text + '\n')
+main(search_term)
