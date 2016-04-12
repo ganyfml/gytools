@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 
+import codecs
+import locale
 import json
 import requests
 import sys
 
-REST_URL = "http://www.ebi.ac.uk/arrayexpress/json/v2/experiments?keywords="
-ORGANSIM = ['Homo+sapiens', 'Mus+musculus']
-TECHNOLOGY = ['\"sequencing+assay\"', '\"array+assay\"']
+REST_URL = "http://www.ebi.ac.uk/arrayexpress/json/v2/experiments"
+ORGANSIM = ['Homo sapiens', 'Mus musculus']
+TECHNOLOGY = ['sequencing assay', 'array assay']
 NCBI_Query = "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
-
-def form_searchQuery(search_entry, organsim_index, technology_index):
-    searchfilter = '&organism=' + ORGANSIM[organsim_index] + '&exptype%5B%5D=\"rna+assay\"&exptype%5B%5D=' + TECHNOLOGY[technology_index] + '&array='
-    query = REST_URL + search_entry + searchfilter
-    return query
 
 def get_platform(experiment):
     platform = ''
@@ -35,26 +32,38 @@ def is_superSeries(name_dataset):
         return False
     return True
 
+def get_info_forOneDataSet(dataset, disease, organsim_index, technology_index):
+    dataset_id = unicode(dataset['accession'])
+    dataset_title = unicode(dataset['name'])
+    dataset_num_sample = unicode(dataset['samples'])
+    dataset_platform = unicode(get_platform(dataset))
+    dataset_tech = unicode(TECHNOLOGY[technology_index])
+    dataset_organsim = unicode(ORGANSIM[organsim_index])
+    dataset_diseaseName = unicode(disease)
+    dataset_superSeries = unicode(is_superSeries(dataset_id))
+    info = '\t'.join([dataset_diseaseName, dataset_id, dataset_num_sample, dataset_organsim, dataset_tech, dataset_platform, dataset_title, dataset_superSeries])
+    return info
+
 def get_resultOne(search_entry, organsim_index, technology_index):
-    result_json = requests.get(form_searchQuery(search_entry, organsim_index, technology_index)).json()
+    request_url = requests.Request('GET',
+            REST_URL,
+            params={'keywords': search_entry, 'organism': ORGANSIM[organsim_index], 'exptype': TECHNOLOGY[technology_index]}
+            ).prepare().url
+    result_json = requests.get(request_url).json()
     num_result = result_json['experiments']['total']
     if num_result == 1:
-        dataset = result_json['experiments']['experiment']['accession']
-        platform = get_platform(result_json['experiments']['experiment'])
-        result = dataset + '\t' + platform
-        if is_superSeries(dataset) == True:
-            result += '\tSuperSeries'
-        result = result.encode('ascii', 'ignore')
-        print result
+        dataset = result_json['experiments']['experiment']
+        print >> sys.stderr, '+++++' + dataset['accession']
+        print get_info_forOneDataSet(dataset, search_entry.strip('"'), organsim_index, technology_index)
     else:
         for exp_id in range(num_result):
-            dataset = result_json['experiments']['experiment'][exp_id]['accession']
-            platform = get_platform(result_json['experiments']['experiment'][exp_id])
-            result = dataset + '\t' + platform
-            if is_superSeries(dataset) == True:
-                result += ",SuperSeries"
-            result = result.encode('ascii', 'ignore')
-            print result
+            dataset = result_json['experiments']['experiment'][exp_id]
+            print >> sys.stderr, '+++++' + dataset['accession']
+            print get_info_forOneDataSet(dataset, search_entry.strip('"'), organsim_index, technology_index)
 
+sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
+reload(sys)  
+sys.setdefaultencoding('utf8')
 for line in sys.stdin:
-    get_resultOne(line, int(sys.argv[1]), int(sys.argv[2]))
+    print >> sys.stderr, line
+    get_resultOne('"' + line.rstrip() + '"', int(sys.argv[1]), int(sys.argv[2]))
