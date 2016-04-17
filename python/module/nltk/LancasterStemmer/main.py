@@ -4,4 +4,4 @@
 from nltk.stem.lancaster import LancasterStemmer
 
 if __name__ == '__main__':
-	print LancasterStemmer().stem('lovely')
+	print LancasterStemmer().stem('yes')

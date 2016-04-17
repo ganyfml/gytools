@@ -11,5 +11,6 @@ num_products = len(products)
 
 #With function
 def has_title(tag):
-	return (target_valid and title_valid and href_valid)
+	return tag.has_attr('title')
+products = soup.find_all("li", { "class" : "s-result-item" })
 ```
