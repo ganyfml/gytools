@@ -5,6 +5,11 @@ Find all the tag match specific criteria
 Find all `li` tags which `class` is `s-result-item"`
 
 ```
+#With parameter
 products = soup.find_all("li", { "class" : "s-result-item" })
 num_products = len(products)
+
+#With function
+def has_title(tag):
+	return (target_valid and title_valid and href_valid)
 ```
