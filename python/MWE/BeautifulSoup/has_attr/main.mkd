@@ -1,0 +1,15 @@
+#text
+
+Get the text content from a tag
+
+Assume you have a tag `tag` which has the below content
+
+```
+<span class="a-size-large" id="productTitle">EVGA</span></span>
+```
+
+To check if it has class,  you can do
+
+```
+tag.has_attr('class')
+```
