@@ -33,14 +33,14 @@ def is_superSeries(name_dataset):
     return True
 
 def get_info_forOneDataSet(dataset, disease, organsim_index, technology_index):
-    dataset_id = unicode(dataset['accession'])
-    dataset_title = unicode(dataset['name'])
-    dataset_num_sample = unicode(dataset['samples'])
-    dataset_platform = unicode(get_platform(dataset))
-    dataset_tech = unicode(TECHNOLOGY[technology_index])
-    dataset_organsim = unicode(ORGANSIM[organsim_index])
-    dataset_diseaseName = unicode(disease)
-    dataset_superSeries = unicode(is_superSeries(dataset_id))
+    dataset_id = dataset['accession'].encode('utf-8')
+    dataset_title = dataset['name']).encode('utf-8')
+    dataset_num_sample = dataset['samples']).encode('utf-8')
+    dataset_platform = get_platform(dataset))
+    dataset_tech = TECHNOLOGY[technology_index])
+    dataset_organsim = ORGANSIM[organsim_index].encode('utf-8')
+    dataset_diseaseName = disease
+    dataset_superSeries = is_superSeries(dataset_id)
     info = '\t'.join([dataset_diseaseName, dataset_id, dataset_num_sample, dataset_organsim, dataset_tech, dataset_platform, dataset_title, dataset_superSeries])
     return info
 
@@ -61,9 +61,6 @@ def get_resultOne(search_entry, organsim_index, technology_index):
             print >> sys.stderr, '+++++' + dataset['accession']
             print get_info_forOneDataSet(dataset, search_entry.strip('"'), organsim_index, technology_index)
 
-sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
-reload(sys)  
-sys.setdefaultencoding('utf8')
 for line in sys.stdin:
     print >> sys.stderr, line
     get_resultOne('"' + line.rstrip() + '"', int(sys.argv[1]), int(sys.argv[2]))
