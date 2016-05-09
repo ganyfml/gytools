@@ -2,7 +2,7 @@
 # vim: set noexpandtab tabstop=2 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
 
 import sys
-import re
+import string
 import nltk
 import operator
 from nltk.corpus import stopwords
@@ -12,9 +12,9 @@ def get_stop_words():
 	return map(LancasterStemmer().stem, set(stopwords.words('english')))
 
 def get_words_fromParagraph(paragraph, stop_words, result_map):
-	tokens = map(LancasterStemmer().stem, nltk.word_tokenize(paragraph))
+	tokens = map(LancasterStemmer().stem, nltk.word_tokenize(paragraph.translate(None, string.punctuation)))
 	for w in tokens:
-		if re.match('[a-z0-9]', w) and w not in stop_words:
+		if w not in stop_words:
 			if w in result_map:
 				result_map[w] += 1
 			else:

@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # vim: set noexpandtab tabstop=2 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
 
+#Used for Ctrl-C
+import signal
+import sys
+#http://stackoverflow.com/questions/7073268/remove-traceback-in-python-on-ctrl-c
+signal.signal(signal.SIGINT, lambda x,y: sys.exit(128 + signal.SIGINT))
+
+#Used for pip
+#Ignore SIG_PIPE and don't throw exceptions on it... (http://docs.python.org/library/signal.html)
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
 import requests
 import urllib
 from bs4 import BeautifulSoup
@@ -19,8 +29,8 @@ def write_image_toFile(url, path):
 			with open(path, 'wb') as f:
 				for chunk in r:
 					f.write(chunk)
-	except:
-		print "Error Detected, one image ignored"
+	except requests.exceptions.RequestException as e:
+		print e
 
 def save_images_fromThread_multi_wrapper(args):
 	return save_images_fromThread(*args)
@@ -55,7 +65,7 @@ def cache_page(page_index):
 	for p in main_page.find_all(vaild_threadTag):
 		thread_argvs.append((os.path.join(BASE_URL, p['href']), folder, thread_num))
 		thread_num += 1
-	pool = ThreadPool(6)
+	pool = ThreadPool(20)
 	pool.map(save_images_fromThread_multi_wrapper,thread_argvs)
 
-cache_page(3)
+cache_page(1)

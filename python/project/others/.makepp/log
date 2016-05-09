@@ -1,0 +1,7 @@
+3/usr/local/bin/mpp
+VERSION2.05.18.2darwin-thread-multi-2level
+LOAD_DEFAULT140472475967392others140472475966696/users/gany/documents/gytools/python/project
+LOAD_INCL140472475898608makepp_builtin_rules.mk140472490246152/usr/local/cellar/makepp/2.0/share/makepp140472475897048makepp_default_makefile.mk140472490246152
+LOAD_END140472475897048
+*** error: no targets specified and no default target in makefile `/usr/local/cellar/makepp/2.0/share/makepp/makepp_default_makefile.mk'
+N_FILES000
