@@ -5,4 +5,5 @@ import sys
 from stat_parser import Parser
 
 parser = Parser()
+print 'Init complete'
 print parser.parse(sys.argv[1])
