@@ -2,4 +2,7 @@
 # vim: set noexpandtab tabstop=2:
 
 set -v
-printf '%s\n%s' 'Today is a good day!' 'How about tomorrow?' | ./main.py
+./main.py << EOF
+Today is a good day!
+How about tomorrow?
+EOF
