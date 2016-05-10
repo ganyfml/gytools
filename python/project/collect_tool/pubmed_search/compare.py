@@ -14,8 +14,3 @@ def read_from_file(file_name):
 
 input_file = str(sys.argv[1])
 read_from_file(input_file)
-
-#with open('compare_result.tsv', 'w+') as result:
-#		for drug_word in sorted_drug.iterkeys():
-#				if drug_word in sorted_disease:
-#						result.write('\t'.join([drug_word, str(disease_dict[drug_word]), str(drug_dict[drug_word])]) + '\n')
