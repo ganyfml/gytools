@@ -1,0 +1,2 @@
+Using access_token and refresh_token
+http://stackoverflow.com/questions/5903278/gdata-python-api-analytics-with-simple-auth

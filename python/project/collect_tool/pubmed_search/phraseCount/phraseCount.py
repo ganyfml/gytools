@@ -33,14 +33,14 @@ def get_terms(text):
 					{<NN.*|JJ>*<NN.*>}  # Nouns and Adjectives, terminated with Nouns
 	
 			NP:
-					{<NBAR>}
 					{<NBAR><IN><NBAR>}  # Above, connected with in/of/etc...
+					{<NBAR>}
 			"""
 	chunker = nltk.RegexpParser(grammar)
 	tree = chunker.parse(postokens)
 	
 	for leaf in leaves(tree):
-		term = [ normalise(w) for w,t in leaf if acceptable_word(w) ]
+		term = [normalise(w) for w, t in leaf if acceptable_word(w)]
 		if len(term) != 0:
 			yield term
 

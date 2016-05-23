@@ -1,0 +1,13 @@
+Using OAuth 2.0 to Access Google APIs
+https://developers.google.com/identity/protocols/OAuth2
+
+To create a credential from Google Developers Console, follow the following steps.
+https://console.developers.google.com
+- Select a project
+  - Create a project...
+- Click `Credentials`
+- Click `Create credentials`
+  - Select `OAuth client ID`, click it
+  - Select `Other` as Application type
+  - Give a name for the credential
+  - Click `OK`
