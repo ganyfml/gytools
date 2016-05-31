@@ -1,9 +1,0 @@
-#`.text`
-
-Get the content of the response, in `unicode`.
-
-If Response.encoding is None, encoding will be guessed using `chardet`.
-
-```
-requests.get(product_url, headers = headers).text
-```
