@@ -18,7 +18,6 @@ credentials = oauth2client.file.Storage(credential_path).get()
 service = build('gmail', 'v1', http=credentials.authorize(Http()))
 
 sent_or_not=sys.argv[2]
-query=sys.argv[3]
 
 exit_status=1
 
