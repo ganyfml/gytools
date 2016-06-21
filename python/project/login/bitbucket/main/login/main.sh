@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 #vim: set noexpandtab tabstop=2:
 
-../login.py 'cookies'
+../../login.py '../cookie_file'
