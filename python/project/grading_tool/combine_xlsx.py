@@ -23,4 +23,3 @@ for file in files:
         current_col += 1
 
 result.save(path + "combined_file.xls")
-

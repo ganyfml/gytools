@@ -2,5 +2,4 @@
 # vim: set noexpandtab tabstop=2:
 
 set -v
-printf "%s\n" 'Robert.Roeder@rockefeller.edu' 'xxx@yyy.zzz' | ../gmlflteml.py "$(readlink -f -e ~/.credentials/pengyu.bio@gmail.com.json)" 'yes'
-printf "%s\n" 'Robert.Roeder@rockefeller.edu' 'xxx@yyy.zzz' | ../gmlflteml.py "$(readlink -f -e ~/.credentials/pengyu.bio@gmail.com.json)" 'no'
+printf "%s\n" 'pengyu.bio@gmail.com' 'xxx@yyy.zzz' | ../gmlflteml.py "/var/folders/mt/4tg5cc6913v1d1nmjlk2j10c0000gp/T/tmp.kXviyzJz0E/credential.json" 'yes'
