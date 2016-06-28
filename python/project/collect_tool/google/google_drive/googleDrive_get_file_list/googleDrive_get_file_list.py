@@ -20,7 +20,18 @@ credentials = oauth2client.file.Storage(credential_path).get()
 service = build('drive', 'v3', http=credentials.authorize(Http()))
 
 def get_all_items(folder_dict, file_dict):
-	items = service.files().list(pageSize = 1000, fields = "files(name, webViewLink, mimeType, id, parents)").execute().get('files', [])
+	page_token = None
+	items = []
+	while True:
+		files = service.files().list(
+				pageSize = 1000
+				, pageToken = page_token
+				, fields = "files(name, webViewLink, mimeType, id, parents), nextPageToken"
+				).execute()
+		page_token = files.get('nextPageToken')
+		items.extend(files['files'])
+		if not page_token:
+			break
 	for item in items:
 		if('folder' in item['mimeType']):
 			if 'parents' not in item:
