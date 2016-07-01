@@ -14,15 +14,9 @@ credential_path = program_path + 'credential.json'
 credentials = oauth2client.file.Storage(credential_path).get()
 service = build('drive', 'v3', http=credentials.authorize(Http()))
 
+items = service.files().list(pageSize = 1000, fields = "files(name, webViewLink)").execute().get('files', [])
 def update_googleDriveData():
-	page_token = None
-	items = []
-	while True:
-		files = service.files().list(pageSize = 1000, fields = "files(name, webViewLink), nextPageToken").execute()
-		items.extend(files['files'])
-		page_token = files.get('nextPageToken')
-		if not page_token:
-			break
+	items = service.files().list(pageSize = 1000, fields = "files(name, webViewLink)").execute().get('files', [])
 	with open(program_path + 'googleDrive.data', 'w+') as data_file:
 		for item in items:
 			data_file.write('\t'.join([item['name'].encode('utf-8'), item['webViewLink'].encode('utf-8')]) + '\n')
@@ -42,7 +36,6 @@ def search_googleDriveData(term):
 if len(sys.argv) == 1:
 	print "Parameter needed, program exit"
 	exit(1)
-
 if sys.argv[1] == '-u':
 	update_googleDriveData()
 	print 'Google drive data updated'
@@ -56,4 +49,7 @@ else:
 		for i, item in enumerate(search_result):
 			print ' '.join([str(i), item.split('\t')[0]])
 		index = raw_input('index:> ')
-		webbrowser.open_new(search_result[int(index)].split('\t')[1])
+		try:
+			webbrowser.open_new(search_result[int(index)].split('\t')[1])
+		except (IndexError, ValueError):
+			print 'Invalid index'

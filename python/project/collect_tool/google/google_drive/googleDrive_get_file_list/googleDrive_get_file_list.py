@@ -1,25 +1,19 @@
 #!/usr/bin/env python
 # vim: set noexpandtab tabstop=2 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
 
+import oauth2client
 import sys
-import signal
-#http://stackoverflow.com/questions/7073268/remove-traceback-in-python-on-ctrl-c
-signal.signal(signal.SIGINT, lambda x,y: sys.exit(128 + signal.SIGINT))
-
-#Ignore SIG_PIPE and don't throw exceptions on it... (http://docs.python.org/library/signal.html)
-signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
 from apiclient.discovery import build
 from httplib2 import Http
-import oauth2client
 from collections import defaultdict
 
 tokencache = sys.argv[1]
 token = oauth2client.file.Storage(tokencache).get()
 service = build('drive', 'v3', http=token.authorize(Http()))
 
-def get_items(items):
+def get_all_folder_files():
 	page_token = None
+	items = []
 	while True:
 		files = service.files().list(
 				pageSize = 1000
@@ -31,9 +25,8 @@ def get_items(items):
 		if not page_token:
 			break
 
-def get_all_folder_files(folders_dict, files_dict):
-	items = []
-	get_items(items)
+	folders_dict = defaultdict(list)
+	files_dict = defaultdict(list)
 	for item in items:
 		item_type = item['mimeType']
 		item_parent_id= 'root' if 'parents' not in item else item['parents'][0]
@@ -45,6 +38,8 @@ def get_all_folder_files(folders_dict, files_dict):
 			file_name = item['name']
 			file_url = item['webViewLink']
 			files_dict[item_parent_id].append([file_name, file_url])
+	
+	return folder_name, files_dict
 
 def get_file_path(parent_id, folders_dict):
 	path = ""
@@ -53,10 +48,7 @@ def get_file_path(parent_id, folders_dict):
 		parent_id = folders_dict[parent_id][1]
 	return path
 
-folders_dict = defaultdict(list)
-files_dict = defaultdict(list)
-get_all_folder_files(folders_dict, files_dict)
-
+folders_dict, files_dict = get_all_folder_files()
 for parent_id, files_info in files_dict.iteritems():
 	parent_folder_path = get_file_path(parent_id, folders_dict)
 	for file_info in files_info:
