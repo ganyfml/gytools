@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim: set noexpandtab tabstop=2 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
 
 import sys
@@ -15,13 +14,12 @@ from httplib2 import Http
 import oauth2client
 from collections import defaultdict
 
-credential_path = sys.argv[1]
-credentials = oauth2client.file.Storage(credential_path).get()
-service = build('drive', 'v3', http=credentials.authorize(Http()))
+tokencache = sys.argv[1]
+token = oauth2client.file.Storage(tokencache).get()
+service = build('drive', 'v3', http=token.authorize(Http()))
 
-def get_all_items(folder_dict, file_dict):
+def get_items(items):
 	page_token = None
-	items = []
 	while True:
 		files = service.files().list(
 				pageSize = 1000
@@ -32,29 +30,36 @@ def get_all_items(folder_dict, file_dict):
 		items.extend(files['files'])
 		if not page_token:
 			break
-	for item in items:
-		if('folder' in item['mimeType']):
-			if 'parents' not in item:
-				folder_dict[item['id'].encode('utf-8')].append((item['name'].encode('utf-8'), 'root'))
-			else:
-				folder_dict[item['id'].encode('utf-8')].append((item['name'].encode('utf-8'), item['parents'][0].encode('utf-8')))
-		else:
-			if 'parents' not in item:
-				file_dict['root'].append([item['name'].encode('utf-8'), item['webViewLink'].encode('utf-8')])
-			else:
-				file_dict[item['parents'][0].encode('utf-8')].append([item['name'].encode('utf-8'), item['webViewLink'].encode('utf-8')])
 
-def get_file_path(parent_id, folder_dict):
+def get_all_folder_files(folders_dict, files_dict):
+	items = []
+	get_items(items)
+	for item in items:
+		item_type = item['mimeType']
+		item_parent_id= 'root' if 'parents' not in item else item['parents'][0]
+		if('folder' in item_type):
+			folder_id = item['id']
+			folder_name = item['name']
+			folders_dict[folder_id] = ([folder_name, item_parent_id])
+		else:
+			file_name = item['name']
+			file_url = item['webViewLink']
+			files_dict[item_parent_id].append([file_name, file_url])
+
+def get_file_path(parent_id, folders_dict):
 	path = ""
-	while parent_id in folder_dict:
-		path = '/'.join([folder_dict[parent_id][0][0], path])
-		parent_id = folder_dict[parent_id][0][1]
+	while parent_id in folders_dict:
+		path = '%s/%s' % (folders_dict[parent_id][0], path)
+		parent_id = folders_dict[parent_id][1]
 	return path
 
-folder_dict = defaultdict(list)
-file_dict = defaultdict(list)
-get_all_items(folder_dict, file_dict)
+folders_dict = defaultdict(list)
+files_dict = defaultdict(list)
+get_all_folder_files(folders_dict, files_dict)
 
-for parent_id, files_info in file_dict.iteritems():
+for parent_id, files_info in files_dict.iteritems():
+	parent_folder_path = get_file_path(parent_id, folders_dict)
 	for file_info in files_info:
-		print '\t'.join([get_file_path(parent_id, folder_dict) + file_info[0], file_info[1]])
+		file_path = (parent_folder_path + file_info[0]).encode('utf-8')
+		file_url = file_info[1].encode('utf-8')
+		print '%s\t%s' %(file_path, file_url)
