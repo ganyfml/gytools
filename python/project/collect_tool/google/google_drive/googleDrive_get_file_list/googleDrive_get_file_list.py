@@ -38,7 +38,7 @@ def get_all_folder_files():
 			file_name = item['name']
 			file_url = item['webViewLink']
 			files_dict[item_parent_id].append([file_name, file_url])
-	
+
 	return folder_name, files_dict
 
 def get_file_path(parent_id, folders_dict):

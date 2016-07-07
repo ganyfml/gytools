@@ -7,7 +7,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
-import time
 
 browser = webdriver.PhantomJS()
 browser.get('http://www.nsf.gov/awardsearch/advancedSearchResult?BooleanElement=All&BooleanRef=All&Program=CAREER:+FACULTY+EARLY+CAR+DEV&OriginalAwardDateOperator=After&OriginalAwardDateFrom=01/01/2016')
