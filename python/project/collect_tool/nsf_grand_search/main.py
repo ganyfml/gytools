@@ -12,7 +12,7 @@ browser = webdriver.PhantomJS()
 browser.get('http://www.nsf.gov/awardsearch/advancedSearchResult?BooleanElement=All&BooleanRef=All&Program=CAREER:+FACULTY+EARLY+CAR+DEV&OriginalAwardDateOperator=After&OriginalAwardDateFrom=01/01/2016')
 try:
 	element = WebDriverWait(browser, 30).until(
-			EC.visibility_of_element_located((By.XPATH, '//*[@id="x-auto-32"]/a'))
+			EC.visibility_of_element_located((By.XPATH, '//*[starts-with(@id, "x-auto-")]/a[@title="Export as CSV"]'))
 			)
 	cookie = {'JSESSIONID' : cookie['value'] for cookie in browser.get_cookies() if cookie['name'] == 'JSESSIONID'}
 	print requests.get('http://www.nsf.gov/awardsearch/ExportResultServlet?exportType=csv', cookies = cookie ).text.encode('utf-8')

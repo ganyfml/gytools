@@ -6,7 +6,6 @@ import sys
 from apiclient.discovery import build
 from httplib2 import Http
 from collections import defaultdict
-import os
 
 tokencache = sys.argv[1]
 token = oauth2client.file.Storage(tokencache).get()
@@ -39,20 +38,20 @@ def get_all_folder_files():
 			file_name = item['name']
 			file_url = item['webViewLink']
 			files_dict[item_parent_id].append([file_name, file_url])
-	return folders_dict, files_dict
+
+	return folder_name, files_dict
 
 def get_file_path(parent_id, folders_dict):
-	path_list = []
+	path = ""
 	while parent_id in folders_dict:
-		path_list.append(folders_dict[parent_id][0])
+		path = '%s/%s' % (folders_dict[parent_id][0], path)
 		parent_id = folders_dict[parent_id][1]
-	path_list.reverse()
-	return '/'.join(path_list)
+	return path
 
 folders_dict, files_dict = get_all_folder_files()
 for parent_id, files_info in files_dict.iteritems():
 	parent_folder_path = get_file_path(parent_id, folders_dict)
 	for file_info in files_info:
-		file_path = os.path.join(parent_folder_path, file_info[0]).encode('utf-8')
+		file_path = (parent_folder_path + file_info[0]).encode('utf-8')
 		file_url = file_info[1].encode('utf-8')
 		print '%s\t%s' %(file_path, file_url)
