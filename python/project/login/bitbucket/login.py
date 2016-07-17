@@ -25,4 +25,7 @@ with open(sys.argv[1], 'wb+') as f:
 			'password' : password
 			}
 	login_page = session.post(post_url, postdata, headers = headers)
-	pk.dump(session.cookies, f, True)
+	if 'signin' in login_page.url:
+		print 'login failed!'
+	else:
+		pk.dump(session.cookies, f, True)
