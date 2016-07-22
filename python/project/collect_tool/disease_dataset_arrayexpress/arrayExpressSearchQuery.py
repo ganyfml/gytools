@@ -32,24 +32,23 @@ def is_superSeries(name_dataset):
 	return "This SuperSeries is composed of the following SubSeries:" in result
 
 def get_info_forOneDataSet(dataset, disease, organsim, technology):
-	dataset_title = dataset['name'].encode('utf-8')
+	dataset_title = dataset['name']
 	return '\t'.join([
 		disease
-		, dataset['accession'].encode('utf-8')
+		, dataset['accession']
 		, str(dataset['samples'])
 		, organsim
 		, technology
-		, get_platform(dataset).encode('utf-8')
+		, get_platform(dataset)
 		, dataset_title
 		, str(is_superSeries(dataset['accession']))
-		])
+		]).encode('utf-8')
 
 def get_resultOne(search_entry, organsim, technology, molecule):
 	params_name = ['keywords', 'organism', 'exptype', 'exptype']
 	params_value = [search_entry, organsim, technology, molecule]
-	params_zip = zip(params_name, params_value)
 	params = defaultdict(list)
-	for v in params_zip:
+	for v in zip(params_name, params_value):
 		params[v[0]].append(v[1])
 	request_url = requests.Request('GET'
 			, 'http://www.ebi.ac.uk/arrayexpress/json/v2/experiments'
