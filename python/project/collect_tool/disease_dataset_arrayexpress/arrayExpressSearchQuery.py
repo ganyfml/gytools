@@ -45,11 +45,12 @@ def get_info_forOneDataSet(dataset, disease, organsim, technology):
 		]).encode('utf-8')
 
 def get_resultOne(search_entry, organsim, technology, molecule):
-	params_name = ['keywords', 'organism', 'exptype', 'exptype']
+	params_name = ['keywords', '"organism"', '"exptype"', '"exptype"']
 	params_value = [search_entry, organsim, technology, molecule]
 	params = defaultdict(list)
-	for v in zip(params_name, params_value):
-		params[v[0]].append(v[1])
+	for n, v in zip(params_name, params_value):
+		if v:
+			params[n].append(v)
 	request_url = requests.Request('GET'
 			, 'http://www.ebi.ac.uk/arrayexpress/json/v2/experiments'
 			, params = params
@@ -66,4 +67,4 @@ def get_resultOne(search_entry, organsim, technology, molecule):
 			print get_info_forOneDataSet(dataset, search_entry.strip('"'), organsim, technology)
 
 for line in sys.stdin:
-	get_resultOne('"' + line.rstrip() + '"', organsim, technology, molecule)
+	get_resultOne('"' + line.rstrip('\n') + '"', organsim, technology, molecule)
