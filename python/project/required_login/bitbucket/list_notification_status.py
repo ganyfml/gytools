@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim: set noexpandtab tabstop=2 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
 
 import sys
@@ -14,42 +13,40 @@ import requests
 import json
 import os
 
-agent = 'Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0'
+cookie_file = sys.argv[1]
+
 headers = {
-		'User-Agent': agent,
-		'Referer' : 'https://bitbucket.org/account/signin/?next=/'
+		'User-Agent': 'Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0'
+		, 'Referer' : 'https://bitbucket.org/account/signin/?next=/'
 		}
+BOOL2STR = {True : 'T', False : 'F'}
 
-def boolenTostr(boolvalue):
-	if boolvalue:
-		return 'T'
-	else:
-		return 'F'
-
-def print_notification_status(repo_url, session):
-	subscription_status_url = os.path.join('https://bitbucket.org/xhr/watch-prefs', repo_url)
-	header = {
+def print_notification_status(repo_path, session):
+	headers = {
 			'X-CSRFToken' : session.cookies['csrftoken']
 			, 'Referer' : 'https://bitbucket.org/account/signin/?next=/'
 			, 'X-Requested-With' : 'XMLHttpRequest'
 			}
-	response = session.post(subscription_status_url, headers = header, data = '{}')
-	repo_subscription_status = [boolenTostr(response.json()[key]) for key in ['commits', 'forks', 'pullrequests']]
+	follow_status_url = os.path.join('https://bitbucket.org', repo_path, 'follow')
+	session.post(url = follow_status_url, headers = headers)
+	response = session.post(follow_status_url, headers = headers)
+	repo_watch_status = response.json()['following']
 
-	follow_status_url = os.path.join('https://bitbucket.org/', repo_url, 'follow')
-	session.post(follow_status_url, headers = header)
-	response = session.post(follow_status_url, headers = header)
-	repo_follow_status = boolenTostr(response.json()['following'])
+	if repo_watch_status:
+		response = session.post(
+				url = os.path.join('https://bitbucket.org/xhr/watch-prefs', repo_path)
+				, data = '{}'
+				, headers = headers
+				)
+		repo_subscription_status = [BOOL2STR[response.json()[key]] for key in ['commits', 'forks', 'pullrequests']]
+	else:
+		repo_subscription_status = ['', '', '']
+	print '\t'.join([repo_path, BOOL2STR[repo_watch_status]] + repo_subscription_status)
 
-	repo_name = repo_url.split('/')[1].rstrip('.git')
-	repo_notification_status = [repo_name, repo_follow_status] + repo_subscription_status
-	print '\t'.join(repo_notification_status)
-
-cookie = sys.argv[1]
 session = requests.Session()
-with open(cookie, 'rb') as f:
+with open(cookie_file, 'rb') as f:
 	session.cookies.update(json.load(f))
 
-print '\t'.join(['repo', 'watching', 'commit', 'forks', 'pullrequests'])
-for repo in sys.stdin:
-	print_notification_status(repo.rstrip('\n'), session)
+print '\t'.join(['repo', 'watching', 'commit', 'fork', 'pullrequest'])
+for repo_path in sys.stdin:
+	print_notification_status(repo_path.rstrip('\n'), session)

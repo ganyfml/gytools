@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim: set noexpandtab tabstop=2 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
 
 import sys
@@ -14,37 +13,37 @@ import requests
 import json
 import os
 
+cookie_file = sys.argv[1]
+
 agent = 'Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0'
 headers = {
 		'User-Agent': agent,
 		'Referer' : 'https://bitbucket.org/account/signin/?next=/'
 		}
 
-def set_notification_status(repo_url, status_list):
-	if len(status_list) != 4:
-		print "ERROR: requrie 4 status!"
-		pass
-	else:
-		header = {
-				'X-CSRFToken' : session.cookies['csrftoken']
-				, 'Referer' : 'https://bitbucket.org/account/signin/?next=/'
-				, 'X-Requested-With' : 'XMLHttpRequest'
-				}
-		keys = ['commits', 'forks', 'pullrequests']
-		subscription_payload = dict(zip(keys, status_list[1:]))
-		subscription_url = os.path.join('https://bitbucket.org/xhr/watch-prefs', repo_url)
-		response = session.post(subscription_url, headers = header, data = json.dumps(subscription_payload))
-		
-		follow_url = os.path.join('https://bitbucket.org/', repo_url, 'follow')
-		if session.post(follow_url, headers = header).json()['following'] != status_list[0]:
-			response = session.post(follow_url, headers = header)
+STRING2BOOL = {'T' : True, 'F' : False}
+def set_notification_status(repo_path, status_list):
+	(watch_status, commit_status, fork_status, pullrequest_status) = status_list
+	headers = {
+			'X-CSRFToken' : session.cookies['csrftoken']
+			, 'Referer' : 'https://bitbucket.org/account/signin/?next=/'
+			, 'X-Requested-With' : 'XMLHttpRequest'
+			}
+	response = session.post(
+			url = os.path.join('https://bitbucket.org/xhr/watch-prefs', repo_path)
+			, data = json.dumps({'commits': commit_status, 'forks': fork_status, 'pullrequests': pullrequest_status})
+			, headers = headers
+			)
 
-cookie = sys.argv[1]
-status = [bool(int(s)) for s in sys.argv[2:]]
+	follow_url = os.path.join('https://bitbucket.org', repo_path, 'follow')
+	if session.post(url=follow_url, headers=headers).json()['following'] != watch_status:
+		response = session.post(url=follow_url, headers=headers)
+
+status = [STRING2BOOL[s] for s in sys.argv[2:]]
 
 session = requests.Session()
-with open(cookie, 'rb') as f:
+with open(cookie_file, 'rb') as f:
 	session.cookies.update(json.load(f))
 
-for repo_url in sys.stdin:
-	set_notification_status(repo_url.rstrip('\n'), status)
+for repo_path in sys.stdin:
+	set_notification_status(repo_path.rstrip('\n'), status)

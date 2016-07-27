@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim: set noexpandtab tabstop=2 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
 
 import sys
@@ -13,6 +12,9 @@ signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 import requests
 import json
 
+username = sys.argv[1]
+password = sys.argv[2]
+
 agent = 'Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0'
 headers = {
 		'User-Agent': agent
@@ -20,23 +22,19 @@ headers = {
 		}
 session = requests.Session()
 session.headers.update(headers)
-url = 'https://bitbucket.org/account/signin/?next=/'
-session.get(url, headers = headers)
+session.get(url='https://bitbucket.org/account/signin/?next=/', headers=headers)
 
-username = sys.argv[1]
-password = sys.argv[2]
-cookie = sys.argv[3]
-
-postdata = {
-		'csrfmiddlewaretoken' : session.cookies['csrftoken']
-		, 'username' : username
-		, 'password' : password
-		}
-post_url = 'https://bitbucket.org/account/signin/'
-login_page = session.post(post_url, postdata, headers = headers)
+login_page = session.post(
+		url = 'https://bitbucket.org/account/signin/'
+		, data = {
+			'csrfmiddlewaretoken' : session.cookies['csrftoken']
+			, 'username' : username
+			, 'password' : password
+			}
+		, headers = headers
+		)
 
 if 'signin' in login_page.url:
 	print 'login failed!'
 else:
-	with open(cookie, 'wb+') as f:
-		json.dump(session.cookies.get_dict(), f)
+	print json.dumps(session.cookies.get_dict())
