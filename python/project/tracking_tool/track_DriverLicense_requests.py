@@ -33,7 +33,7 @@ payload_template = {
 def get_earliest_day_in_month(year, month):
 	payload = payload_template
 	payload['date_ymd'] = '%d%02d32' % (year, month)
-	r = requests.get('https://booknow.securedata-trans.com/1qed83ds/', payload_template)
+	r = requests.get(url = 'https://booknow.securedata-trans.com/1qed83ds/', data = payload)
 	try:
 		return int(re.finditer('<a id="cv-leftnav-item-calendar-available-id".*>(\d*)<\/a>', r.text).next().group(1))
 	except StopIteration:
@@ -48,6 +48,7 @@ def get_earliest_date():
 		year += new_month < month
 		month = new_month
 		day = get_earliest_day_in_month(year, month)
+		print year, month, day
 		return datetime.datetime(year, month, day)
 
 prev_date = get_earliest_date()
