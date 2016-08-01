@@ -16,7 +16,7 @@ dataset_json = json.load(sys.stdin)
 
 def get_platform(experiment):
 	if 'arraydesign' in experiment: 
-		if not isinstance(experiment['arraydesign'],list):
+		if not isinstance(experiment['arraydesign'], list):
 			return experiment['arraydesign']['name']
 		else:
 			return ' / '.join([design['name'] for design in experiment['arraydesign']])
@@ -28,10 +28,16 @@ def is_superSeries(experiment):
 	result = requests.get('http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=' + query_name).text
 	return str("This SuperSeries is composed of the following SubSeries:" in result)
 
+def get_organism(experiment):
+	if isinstance(experiment['organism'], list):
+		return ' / '.join(experiment['organism'])
+	else:
+		return experiment['organism']
+
 def print_info_forDataSet(dataset_json):
 	experiment = dataset_json['experiments']['experiment']
 	print '\t'.join([
-		experiment['organism']
+		get_organism(experiment)
 		, experiment['experimenttype']
 		, experiment['accession']
 		, str(experiment['samples'])

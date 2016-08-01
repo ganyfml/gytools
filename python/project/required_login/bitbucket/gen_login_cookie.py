@@ -10,10 +10,6 @@ signal.signal(signal.SIGINT, lambda x,y: sys.exit(128 + signal.SIGINT))
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 import requests
-import json
-
-username = sys.argv[1]
-password = sys.argv[2]
 
 agent = 'Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0'
 headers = {
@@ -23,6 +19,9 @@ headers = {
 session = requests.Session()
 session.headers.update(headers)
 session.get(url='https://bitbucket.org/account/signin/?next=/', headers=headers)
+
+username = sys.argv[1]
+password = sys.argv[2]
 
 login_page = session.post(
 		url = 'https://bitbucket.org/account/signin/'
@@ -34,7 +33,11 @@ login_page = session.post(
 		, headers = headers
 		)
 
+import json
+import re
+
 if 'signin' in login_page.url:
-	print 'login failed!'
+	print >> sys.stderr, re.search('data-errors=".*&#34;(.*)&#34;.*"', login_page.text).group(1)
+	sys.exit(1)
 else:
 	print json.dumps(session.cookies.get_dict())

@@ -2,6 +2,6 @@
 # vim: set noexpandtab tabstop=2:
 
 set -v
-echo '"Rett syndrome"' | ../../search_term_2_accession.py 'Homo sapiens' '"array assay"' '"rna assay"'
-echo '"Rett syndrome"' | ../../search_term_2_accession.py 'Homo sapiens' '"sequencing assay"' '"dna assay"'
-echo '"Rett syndrome"' | ../../search_term_2_accession.py 'Homo sapiens' '' ''
+../../search_term_2_accession.py 'Homo sapiens' '"array assay"' '"rna assay"' <<< '"Rett syndrome"' 
+../../search_term_2_accession.py 'Homo sapiens' '"sequencing assay"' '"dna assay"' <<< '"Rett syndrome"' 
+../../search_term_2_accession.py 'Homo sapiens' '' '' <<< '"Rett syndrome"' 

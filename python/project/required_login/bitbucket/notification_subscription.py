@@ -14,32 +14,29 @@ import json
 import os
 
 cookie_file = sys.argv[1]
-
-agent = 'Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0'
-headers = {
-		'User-Agent': agent,
-		'Referer' : 'https://bitbucket.org/account/signin/?next=/'
-		}
+status = sys.argv[2:]
 
 STRING2BOOL = {'T' : True, 'F' : False}
 def set_notification_status(repo_path, status_list):
-	(watch_status, commit_status, fork_status, pullrequest_status) = status_list
 	headers = {
 			'X-CSRFToken' : session.cookies['csrftoken']
 			, 'Referer' : 'https://bitbucket.org/account/signin/?next=/'
 			, 'X-Requested-With' : 'XMLHttpRequest'
 			}
+	watch_status = status_list[0]
+	if watch_status != 'U':
+		watch_url = os.path.join('https://bitbucket.org', repo_path, 'follow')
+		if session.post(url = watch_url, headers = headers).json()['following'] != STRING2BOOL[watch_status]:
+			response = session.post(url = watch_url, headers = headers)
+
+	repo_sub_name = ['commits', 'forks', 'pullrequests']
+	repo_sub_status = [status_list[status] for status in range(1, 4)]
+	repo_sub_params = {name : STRING2BOOL[status] for name, status in zip(repo_sub_name, repo_sub_status) if status != 'U'}
 	response = session.post(
 			url = os.path.join('https://bitbucket.org/xhr/watch-prefs', repo_path)
-			, data = json.dumps({'commits': commit_status, 'forks': fork_status, 'pullrequests': pullrequest_status})
+			, data = json.dumps(repo_sub_params)
 			, headers = headers
 			)
-
-	follow_url = os.path.join('https://bitbucket.org', repo_path, 'follow')
-	if session.post(url=follow_url, headers=headers).json()['following'] != watch_status:
-		response = session.post(url=follow_url, headers=headers)
-
-status = [STRING2BOOL[s] for s in sys.argv[2:]]
 
 session = requests.Session()
 with open(cookie_file, 'rb') as f:

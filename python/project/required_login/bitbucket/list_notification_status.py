@@ -15,12 +15,7 @@ import os
 
 cookie_file = sys.argv[1]
 
-headers = {
-		'User-Agent': 'Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0'
-		, 'Referer' : 'https://bitbucket.org/account/signin/?next=/'
-		}
 BOOL2STR = {True : 'T', False : 'F'}
-
 def print_notification_status(repo_path, session):
 	headers = {
 			'X-CSRFToken' : session.cookies['csrftoken']
