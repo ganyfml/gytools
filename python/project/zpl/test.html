@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+
+<html>
+   <head>
+      <script type = "text/javascript">
+         function WebSocketTest() {
+            if ("WebSocket" in window) {
+               alert("WebSocket is supported by your Browser!");
+               
+               // Let us open a web socket
+               var ws = new WebSocket("ws://localhost:8765");
+				
+               ws.onopen = function() {
+                  let printerMessage = {
+                     connection:{ip: '192.168.1.2', port: 2222},
+                     content: 'test_content'
+                  };
+                  ws.send(JSON.stringify(printerMessage));
+               };
+				
+               ws.onmessage = function (evt) { 
+                  var received_msg = evt.data;
+                  alert(received_msg);
+               };
+				
+               ws.onclose = function() { 
+                  // websocket is closed.
+                  alert("Connection is closed..."); 
+               };
+            } else {
+               // The browser doesn't support WebSocket
+               alert("WebSocket NOT supported by your Browser!");
+            }
+         }
+      </script>
+   </head>
+   
+   <body>
+      <div id = "sse">
+         <a href = "javascript:WebSocketTest()">Run WebSocket</a>
+      </div>
+   </body>
+</html>
