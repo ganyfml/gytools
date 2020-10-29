@@ -30,7 +30,7 @@ class AppServerSvc (win32serviceutil.ServiceFramework):
             printer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             printer_socket.connect((connection['ip'], connection['port']))
             print('打印机连接成功，发送数据')   
-            printer_socket.send(print_content_encode)
+            printer_socket.send(bytes(content, 'gb2312'))
             print('发送完成')
             printer_socket.close()
         except:

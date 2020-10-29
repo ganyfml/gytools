@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['zplBridge.py'],
-             pathex=['C:\\Users\\ganyf\\Desktop\\zpl'],
+             pathex=['C:\\Users\\ganyf\\Desktop\\gytools\\python\\project\\zpl'],
              binaries=[],
              datas=[],
              hiddenimports=['win32timezone'],
