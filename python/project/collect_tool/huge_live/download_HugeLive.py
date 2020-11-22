@@ -43,7 +43,7 @@ def get_download_infos_from_URL(url, output_dir):
 			os.makedirs(output_dir)
 	return download_infos
 
-def download_task(v):
+def download_task(v, verbose):
 	d_title = v['title']
 	d_url = v['url']
 	d_ep = v['ep']
@@ -56,13 +56,15 @@ def download_task(v):
 		# 'no_warnings': True
 	}
 	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+		if verbose:
+			print(f'Downloading: {d_url}')
 		ydl.download([d_url])
 	print(f'{d_title} {d_ep} Finish')
 
-def download_multiple(url_list):
+def download_multiple(url_list, verbose):
 	with concurrent.futures.ThreadPoolExecutor(max_workers=8) as e:
 		for url in url_list:
-			e.submit(download_task, url)
+			e.submit(download_task, url, verbose)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Download videos from hugelive.com')
@@ -71,6 +73,8 @@ if __name__ == "__main__":
 
 	parser.add_argument('-i', '--input', help='tv/movie url to download from', required=False)
 	parser.add_argument('-o', '--output', help='path to store the downloaded file', required=False)
+
+	parser.add_argument('-v', '--verbose', action='store_true', help='verbose mode', required=False)
 	args = parser.parse_args()
 
 	if args.read and (args.input or args.output):
@@ -91,5 +95,4 @@ if __name__ == "__main__":
 		download_infos = get_download_infos_from_URL(args.input, args.output)
 
 	print(f'{len(download_infos)} video found, start downloading')
-	download_multiple(download_infos)
-
+	download_multiple(download_infos, args.verbose)
