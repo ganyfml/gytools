@@ -25,7 +25,6 @@ def get_download_infos_from_URL(url, output_dir):
         url_list = []
         for src in src_orders:
             src_info = json.loads(decode_data[src])
-            print(src_info)
             if len(src_info) != 0:
                 url_list = json.loads(src_info[0]['srcs'])
                 break;
