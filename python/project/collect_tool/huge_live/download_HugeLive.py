@@ -11,6 +11,41 @@ import concurrent.futures
 import argparse
 import yaml
 
+def organize_download_urls(video_info, output_dir, url_list):
+    download_infos = []
+    ep2url = {}
+    for u in url_list:
+        for m in u:
+            m_raw_key = list(m.keys())[0]
+            m_value = m[m_raw_key]
+            m_key = m_raw_key
+            try:
+                m_key = int(m_key)
+            except ValueError:
+                pass
+            
+            if m_key in ep2url:
+                ep2url[m_key].append(m_value)
+            else:
+                ep2url[m_key] = [m_value]
+    
+    for u in url_list[0]:
+        d_info = {
+             'title': video_info['title'],
+             'ep': list(u.keys())[0],
+             'output': output_dir,
+             }
+        raw_ep = list(u.keys())[0]
+        ep = raw_ep
+        try:
+            ep = int(raw_ep)
+        except:
+            pass
+        d_info['urls'] = ep2url[ep]
+        download_infos.append(d_info)
+    print(download_infos)
+    return download_infos
+
 def get_download_infos_from_URL(url, output_dir):
     src_orders = ['pangzi_info', 'pangzi_info_backup', 'cjg_info', 'zuikuai_info', 'mahua_info']
     
@@ -26,21 +61,14 @@ def get_download_infos_from_URL(url, output_dir):
         for src in src_orders:
             src_info = json.loads(decode_data[src])
             if len(src_info) != 0:
-                url_list = json.loads(src_info[0]['srcs'])
-                break;
+                url_list.append(json.loads(src_info[0]['srcs']))
         if len(url_list) == 0:
             print('No srcs found, abort')
             return []
 
-        download_infos = []
         video_info = json.loads(decode_data['infos'])[0]
-        for u in url_list:
-            download_infos.append({
-                'title': video_info['title'],
-                'ep': list(u.keys())[0],
-                'url': list(u.values())[0],
-                'output': output_dir
-                })
+        download_infos = organize_download_urls(video_info, output_dir ,url_list)
+        print(download_infos)
         print(f'{video_info["title"]} analysis complete')
 
         if not os.path.exists(output_dir):
@@ -49,7 +77,7 @@ def get_download_infos_from_URL(url, output_dir):
 
 def download_task(v, verbose):
     d_title = v['title']
-    d_url = v['url']
+    d_urls = v['urls']
     d_ep = v['ep']
     d_output = v['output']
     print(f'Start Downloading {d_title} {d_ep}')
@@ -60,9 +88,15 @@ def download_task(v, verbose):
         # 'no_warnings': True
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        if verbose:
-            print(f'Downloading: {d_url}')
-        ydl.download([d_url])
+        for u in d_urls:
+            try:
+                if verbose:
+                    print(f'Downloading: {u}')
+                ydl.download([u])
+                break
+            except:
+                print('retry: ')
+                pass
     print(f'{d_title} {d_ep} Finish')
 
 def download_multiple(url_list, verbose):
