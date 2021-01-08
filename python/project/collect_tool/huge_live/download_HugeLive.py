@@ -43,7 +43,6 @@ def organize_download_urls(video_info, output_dir, url_list):
             pass
         d_info['urls'] = ep2url[ep]
         download_infos.append(d_info)
-    print(download_infos)
     return download_infos
 
 def get_download_infos_from_URL(url, output_dir):
