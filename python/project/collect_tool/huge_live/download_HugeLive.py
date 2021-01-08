@@ -12,7 +12,7 @@ import argparse
 import yaml
 
 def get_download_infos_from_URL(url, output_dir):
-    src_orders = ['pangzi_info', 'pangzi_info_backup', 'cjg_info', 'zuikuai_info']
+    src_orders = ['pangzi_info', 'pangzi_info_backup', 'cjg_info', 'zuikuai_info', 'mahua_info']
     
     ##Download the encrypted_data
     url_data = requests.get(url)
@@ -30,7 +30,7 @@ def get_download_infos_from_URL(url, output_dir):
                 break;
         if len(url_list) == 0:
             print('No srcs found, abort')
-            return
+            return []
 
         download_infos = []
         video_info = json.loads(decode_data['infos'])[0]
