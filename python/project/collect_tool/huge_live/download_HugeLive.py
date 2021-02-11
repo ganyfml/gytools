@@ -46,16 +46,16 @@ def organize_download_urls(video_info, output_dir, url_list):
     return download_infos
 
 def get_download_infos_from_URL(url, output_dir):
-    src_orders = ['pangzi_info', 'pangzi_info_backup', 'cjg_info', 'zuikuai_info', 'mahua_info']
+    src_orders = ['l4_info', 'l5_info', 'l1_info']
     
     ##Download the encrypted_data
     url_data = requests.get(url)
-    encrypted_data = re.search(r'{"dataEnc":"(.*?)"', url_data.text).group(1)
+    encrypted_data = re.search(r'{"data":"(.*?)"', url_data.text).group(1)
 
     ##Decode the data
     with open('decode.js','r') as f:
         js_decode_func = js2py.eval_js(f.read())
-        decode_data = js_decode_func(encrypted_data)
+        decode_data = js_decode_func(encrypted_data)['results']
         url_list = []
         for src in src_orders:
             src_info = json.loads(decode_data[src])
@@ -67,7 +67,6 @@ def get_download_infos_from_URL(url, output_dir):
 
         video_info = json.loads(decode_data['infos'])[0]
         download_infos = organize_download_urls(video_info, output_dir ,url_list)
-        print(download_infos)
         print(f'{video_info["title"]} analysis complete')
 
         if not os.path.exists(output_dir):
