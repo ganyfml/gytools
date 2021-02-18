@@ -10,6 +10,7 @@ import youtube_dl
 import concurrent.futures
 import argparse
 import yaml
+from tqdm import tqdm
 
 def organize_download_urls(video_info, output_dir, url_list):
     download_infos = []
@@ -79,12 +80,12 @@ def get_download_infos_from_URL(url, output_dir, src_name):
             os.makedirs(output_dir)
     return download_infos
 
-def download_task(v, verbose):
+def download_task(v, verbose, pbar):
     d_title = v['title']
     d_urls = v['urls']
     d_ep = v['ep']
     d_output = v['output']
-    print(f'Start Downloading {d_title} {d_ep}')
+    pbar.write(f'Start Downloading {d_title} {d_ep}')
     ydl_opts = { 
         'nocheckcertificate': True, 
         'outtmpl': f'{d_output}/{d_ep}.%(ext)s',
@@ -95,18 +96,20 @@ def download_task(v, verbose):
         for u in d_urls:
             try:
                 if verbose:
-                    print(f'Downloading: {u}')
+                    pbar.write(f'Downloading: {u}')
                 ydl.download([u])
                 break
             except:
-                print('retry: ')
+                pbar.write('retry: ')
                 pass
-    print(f'{d_title} {d_ep} Finish')
+    pbar.write(f'{d_title} {d_ep} Finish')
+    pbar.update(1)
 
 def download_multiple(url_list, verbose):
+    pbar = tqdm(total=len(url_list), desc='Downloading:')
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as e:
         for url in url_list:
-            e.submit(download_task, url, verbose)
+            e.submit(download_task, url, verbose, pbar)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Download videos from hugelive.com')
