@@ -45,8 +45,8 @@ def organize_download_urls(video_info, output_dir, url_list):
         download_infos.append(d_info)
     return download_infos
 
-def get_download_infos_from_URL(url, output_dir):
-    src_orders = ['l4_info', 'l5_info', 'l1_info']
+def get_download_infos_from_URL(url, output_dir, src_name):
+    src_orders = ['l4_info', 'l5_info', 'l8_info', 'l1_info']
     
     ##Download the encrypted_data
     url_data = requests.get(url)
@@ -57,12 +57,18 @@ def get_download_infos_from_URL(url, output_dir):
         js_decode_func = js2py.eval_js(f.read())
         decode_data = js_decode_func(encrypted_data)['results']
         url_list = []
-        for src in src_orders:
+
+        src2process = [src_name] if src_name else src_orders
+        for src in src2process:
+            if src not in decode_data:
+                print(f'{src} not avaiable')
+                continue
             src_info = json.loads(decode_data[src])
             if len(src_info) != 0:
                 url_list.append(json.loads(src_info[0]['srcs']))
+
         if len(url_list) == 0:
-            print('No srcs found, abort')
+            print('No avaiable srcs found, abort')
             return []
 
         video_info = json.loads(decode_data['infos'])[0]
@@ -107,6 +113,8 @@ if __name__ == "__main__":
 
     parser.add_argument('-r', '--read', help='Download multiple tv/movie series using yaml file', required=False)
 
+    parser.add_argument('-s', '--src', help='Sepcific source to download', required=False)
+
     parser.add_argument('-i', '--input', help='tv/movie url to download from', required=False)
     parser.add_argument('-o', '--output', help='path to store the downloaded file', required=False)
 
@@ -128,9 +136,9 @@ if __name__ == "__main__":
             download_links = yaml.load(f, Loader=yaml.FullLoader)
         download_infos = []
         for l in download_links:
-            download_infos.extend(get_download_infos_from_URL(l['url'], l['path']))
+            download_infos.extend(get_download_infos_from_URL(l['url'], l['path'], args.src))
     else:
-        download_infos = get_download_infos_from_URL(args.input, args.output)
+        download_infos = get_download_infos_from_URL(args.input, args.output, args.src)
 
     print(f'{len(download_infos)} video found, start downloading')
     download_multiple(download_infos, args.verbose)
