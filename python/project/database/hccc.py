@@ -7,4 +7,3 @@ client = MongoClient('128.194.140.206', 27017)
 
 db = client.tti
 log_db = client.log
-
