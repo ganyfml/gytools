@@ -12,7 +12,7 @@ import argparse
 import yaml
 from tqdm import tqdm
 
-def organize_download_urls(video_info, output_dir, url_list):
+def organize_download_urls(video_info, output_dir, url_list, file_prefix):
     download_infos = []
     ep2url = {}
     for u in url_list:
@@ -23,7 +23,11 @@ def organize_download_urls(video_info, output_dir, url_list):
             try:
                 m_key = int(m_key)
             except ValueError:
-                pass
+                num_extract = re.findall(r'\d+', m_key)
+                if len(num_extract) == 1:
+                    m_key = int(num_extract[0])
+                else:
+                    pass
             
             if m_key in ep2url:
                 ep2url[m_key].append(m_value)
@@ -35,6 +39,7 @@ def organize_download_urls(video_info, output_dir, url_list):
              'title': video_info['title'],
              'ep': list(u.keys())[0],
              'output': output_dir,
+             'file_prefix': file_prefix
              }
         raw_ep = list(u.keys())[0]
         ep = raw_ep
@@ -46,7 +51,7 @@ def organize_download_urls(video_info, output_dir, url_list):
         download_infos.append(d_info)
     return download_infos
 
-def get_download_infos_from_URL(url, output_dir, src_name):
+def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
     src_orders = ['l4_info', 'l5_info', 'l8_info', 'l1_info']
     
     ##Download the encrypted_data
@@ -73,7 +78,7 @@ def get_download_infos_from_URL(url, output_dir, src_name):
             return []
 
         video_info = json.loads(decode_data['infos'])[0]
-        download_infos = organize_download_urls(video_info, output_dir ,url_list)
+        download_infos = organize_download_urls(video_info, output_dir, url_list, file_prefix)
         print(f'{video_info["title"]} analysis complete')
 
         if not os.path.exists(output_dir):
@@ -84,13 +89,14 @@ def download_task(v, verbose, pbar):
     d_title = v['title']
     d_urls = v['urls']
     d_ep = v['ep']
+    d_file_prefix = v['file_prefix']
     d_output = v['output']
     pbar.write(f'Start Downloading {d_title} {d_ep}')
     ydl_opts = { 
         'nocheckcertificate': True, 
-        'outtmpl': f'{d_output}/{d_ep}.%(ext)s',
-        'quiet': True
-        # 'no_warnings': True
+        'outtmpl': f'{d_output}/{d_file_prefix}{d_ep}.%(ext)s',
+        'quiet': True,
+        'no_warnings': True
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         for u in d_urls:
@@ -120,6 +126,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-i', '--input', help='tv/movie url to download from', required=False)
     parser.add_argument('-o', '--output', help='path to store the downloaded file', required=False)
+    parser.add_argument('-p', '--prefix', help='downloaded file prefix', required=False)
 
     parser.add_argument('-v', '--verbose', action='store_true', help='verbose mode', required=False)
 
@@ -139,9 +146,9 @@ if __name__ == "__main__":
             download_links = yaml.load(f, Loader=yaml.FullLoader)
         download_infos = []
         for l in download_links:
-            download_infos.extend(get_download_infos_from_URL(l['url'], l['path'], args.src))
+            download_infos.extend(get_download_infos_from_URL(l['url'], l['path'], args.src, l['prefix'] if 'prefix' in l else ''))
     else:
-        download_infos = get_download_infos_from_URL(args.input, args.output, args.src)
+        download_infos = get_download_infos_from_URL(args.input, args.output, args.src, args.prefix if 'prefix' in args else '')
 
     print(f'{len(download_infos)} video found, start downloading')
     download_multiple(download_infos, args.verbose)
