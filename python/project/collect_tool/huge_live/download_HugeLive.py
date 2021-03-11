@@ -11,8 +11,9 @@ import concurrent.futures
 import argparse
 import yaml
 from tqdm import tqdm
+from bs4 import BeautifulSoup
 
-def organize_download_urls(video_info, output_dir, url_list, file_prefix):
+def organize_download_urls(video_title, output_dir, url_list, file_prefix):
     download_infos = []
     ep2url = {}
     for u in url_list:
@@ -33,10 +34,10 @@ def organize_download_urls(video_info, output_dir, url_list, file_prefix):
                 ep2url[m_key].append(m_value)
             else:
                 ep2url[m_key] = [m_value]
-    
+
     for u in url_list[0]:
         d_info = {
-             'title': video_info['title'],
+             'title': video_title,
              'ep': list(u.keys())[0],
              'output': output_dir,
              'file_prefix': file_prefix
@@ -46,12 +47,16 @@ def organize_download_urls(video_info, output_dir, url_list, file_prefix):
         try:
             ep = int(raw_ep)
         except:
-            pass
-        d_info['urls'] = ep2url[ep]
-        download_infos.append(d_info)
+            num_extract = re.findall(r'\d+', raw_ep)
+            if len(num_extract) == 1:
+                ep = int(num_extract[0])
+                d_info['urls'] = ep2url[ep]
+                download_infos.append(d_info)
+            else:
+                pass
     return download_infos
 
-def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
+def decode_xinghe(url, src_name):
     src_orders = ['l4_info', 'l5_info', 'l8_info', 'l1_info']
     
     ##Download the encrypted_data
@@ -77,12 +82,49 @@ def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
             print('No avaiable srcs found, abort')
             return []
 
-        video_info = json.loads(decode_data['infos'])[0]
-        download_infos = organize_download_urls(video_info, output_dir, url_list, file_prefix)
-        print(f'{video_info["title"]} analysis complete')
+        video_title = json.loads(decode_data['infos'])[0]["title"]
+    return video_title, url_list
 
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+def decode_duonao(url, src_name):
+    def get_d_url_for_one_ep(ep_url, ep_txt, route_ep_d_info):
+        res = requests.get(ep_url)
+        d_url = re.search(r"video_url: \'(.*)\'", res.text).group(1)
+        route_ep_d_info.append({ep_txt : d_url})
+
+    url_data = requests.get(url)
+    routes = [m.group(1) for m in re.finditer('href="#route(\d)"', url_data.text)]
+    print(f'{len(routes)} route(s) found, analysing')
+    url_list = []
+    soup = BeautifulSoup(url_data.text, 'html.parser')
+    for r in routes:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            route_ep_d_info = []
+            container = soup.find('div', {'id' : f'route{r}'})
+            for ep_button in container.find_all('a'):
+                ep_url = ep_button['href'].replace('../', 'https://duonaolive.com/')
+                ep_txt = ep_button.text.strip()
+                pool.submit(get_d_url_for_one_ep, ep_url, ep_txt, route_ep_d_info)
+        url_list.append(route_ep_d_info)
+
+    video_title = soup.find('div', {'class' : 'video-title'}).text.strip()
+    return video_title, url_list
+
+def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
+    xinghe_re = re.compile('hugelive|xinghe')
+    duonao_re = re.compile('duonaolive')
+    if xinghe_re.search(url):
+        video_title, url_list = decode_xinghe(url, src_name)
+    elif: duonao_re.search(url):
+        video_title, url_list = decode_duonao(url, src_name)
+    else:
+        print(f'URL not supported')
+        return []
+
+    download_infos = organize_download_urls(video_title, output_dir, url_list, file_prefix)
+    print(f'{video_title} analysis complete')
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     return download_infos
 
 def download_task(v, verbose, pbar):
