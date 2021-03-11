@@ -38,7 +38,6 @@ def organize_download_urls(video_title, output_dir, url_list, file_prefix):
     for u in url_list[0]:
         d_info = {
              'title': video_title,
-             'ep': list(u.keys())[0],
              'output': output_dir,
              'file_prefix': file_prefix
              }
@@ -50,10 +49,11 @@ def organize_download_urls(video_title, output_dir, url_list, file_prefix):
             num_extract = re.findall(r'\d+', raw_ep)
             if len(num_extract) == 1:
                 ep = int(num_extract[0])
-                d_info['urls'] = ep2url[ep]
-                download_infos.append(d_info)
             else:
                 pass
+        d_info['ep'] = ep
+        d_info['urls'] = ep2url[ep]
+        download_infos.append(d_info)
     return download_infos
 
 def decode_xinghe(url, src_name):
@@ -115,7 +115,7 @@ def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
     duonao_re = re.compile('duonaolive')
     if xinghe_re.search(url):
         video_title, url_list = decode_xinghe(url, src_name)
-    elif: duonao_re.search(url):
+    elif duonao_re.search(url):
         video_title, url_list = decode_duonao(url, src_name)
     else:
         print(f'URL not supported')
@@ -141,6 +141,7 @@ def download_task(v, verbose, pbar):
         'quiet': True,
         'no_warnings': True
     }
+    youtube_dl.utils.std_headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36'
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         for u in d_urls:
             try:
