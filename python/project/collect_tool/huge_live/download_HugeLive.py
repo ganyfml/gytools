@@ -13,6 +13,15 @@ import yaml
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
+#suppress youtube-dl print
+class youtube_dl_quiet_logger(object):
+    def debug(self, msg):
+        pass
+    def warning(self, msg):
+        pass
+    def error(self, msg):
+        pass
+
 def organize_download_urls(video_title, output_dir, url_list, file_prefix):
     download_infos = []
     ep2url = {}
@@ -134,38 +143,54 @@ def download_task(v, verbose, pbar):
     d_ep = v['ep']
     d_file_prefix = v['file_prefix']
     d_output = v['output']
-    pbar.write(f'Start Downloading {d_title} {d_ep}')
+    pbar.write(f'Start Downloading {d_title} {d_ep:02d}')
     ydl_opts = { 
         'nocheckcertificate': True, 
-        'outtmpl': f'{d_output}/{d_file_prefix}{d_ep}.%(ext)s',
+        'outtmpl': f'{d_output}/{d_file_prefix}{d_ep:02d}.%(ext)s',
         'quiet': True,
-        'no_warnings': True
+        'no_warnings': True,
+        'continue_dl': True,
+        'logger': youtube_dl_quiet_logger()
     }
 
     youtube_dl.utils.std_headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36'
     download_success = False
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         for u in d_urls:
-            try:
-                if verbose:
-                    pbar.write(f'Downloading: {u}')
-                ydl.download([u])
-                download_success = True
-                break
-            except:
-                pbar.write(f'Error downloading {v['title']} with {v['urls']}\nRetry: {v['title']} with another url')
+            if verbose:
+                pbar.write(f'Downloading: {u}')
+            retry_count = 0
+            while retry_count < 6:
+                try:
+                    ydl.download([u])
+                    download_success = True
+                    break
+                except:
+                    retry_count += 1
+            if not download_success:
+                pbar.write(f'Error downloading {d_title}: {d_ep} with {u}\nRetry: another url')
+            else:
                 pass
     if download_success:
         pbar.write(f'{d_title} {d_ep} Finish')
     else:
         pbar.write(f'{d_title} {d_ep} download Failed')
     pbar.update(1)
+    return d_title, d_ep, download_success
 
 def download_multiple(url_list, verbose):
     pbar = tqdm(total=len(url_list), desc='Downloading:')
+    error_list = []
+    processes = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as e:
         for url in url_list:
-            e.submit(download_task, url, verbose, pbar)
+            processes.append(e.submit(download_task, url, verbose, pbar))
+        for _ in concurrent.futures.as_completed(processes):
+            titile, ep, success = _.result()
+            if not success:
+                error_list.append(f'{titile}: {ep}')
+        print(f'{len(error_list)} task failed:')
+        print('\n'.join(error_list))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Download videos from hugelive.com')
