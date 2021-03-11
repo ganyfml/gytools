@@ -52,7 +52,8 @@ def organize_download_urls(video_info, output_dir, url_list, file_prefix):
     return download_infos
 
 def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
-    src_orders = ['l4_info', 'l5_info', 'l8_info', 'l1_info']
+    #l5_info temp down due to duboku cannot download
+    src_orders = ['l4_info', 'l8_info', 'l1_info']
     
     ##Download the encrypted_data
     url_data = requests.get(url)
