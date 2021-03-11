@@ -141,18 +141,24 @@ def download_task(v, verbose, pbar):
         'quiet': True,
         'no_warnings': True
     }
+
     youtube_dl.utils.std_headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36'
+    download_success = False
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         for u in d_urls:
             try:
                 if verbose:
                     pbar.write(f'Downloading: {u}')
                 ydl.download([u])
+                download_success = True
                 break
             except:
-                pbar.write('retry: ')
+                pbar.write(f'Error downloading {v['title']} with {v['urls']}\nRetry: {v['title']} with another url')
                 pass
-    pbar.write(f'{d_title} {d_ep} Finish')
+    if download_success:
+        pbar.write(f'{d_title} {d_ep} Finish')
+    else:
+        pbar.write(f'{d_title} {d_ep} download Failed')
     pbar.update(1)
 
 def download_multiple(url_list, verbose):
