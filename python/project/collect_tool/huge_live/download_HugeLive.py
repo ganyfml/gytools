@@ -57,7 +57,8 @@ def organize_download_urls(video_title, output_dir, url_list, file_prefix):
     return download_infos
 
 def decode_xinghe(url, src_name):
-    src_orders = ['l4_info', 'l5_info', 'l8_info', 'l1_info']
+    #l5_info temp down due to duboku cannot download
+    src_orders = ['l4_info', 'l8_info', 'l1_info']
     
     ##Download the encrypted_data
     url_data = requests.get(url)
