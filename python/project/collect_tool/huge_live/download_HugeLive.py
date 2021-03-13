@@ -12,6 +12,8 @@ import argparse
 import yaml
 from tqdm import tqdm
 from bs4 import BeautifulSoup
+from urllib.parse import urlsplit, urljoin
+from utils.downloader import m3u8_downloader
 
 #suppress youtube-dl print
 class youtube_dl_quiet_logger(object):
@@ -95,6 +97,30 @@ def decode_xinghe(url, src_name):
         video_title = json.loads(decode_data['infos'])[0]["title"]
     return video_title, url_list
 
+def decode_duboku(url, src_name):
+    def get_d_url_for_one_ep(ep_url, ep_txt, route_ep_d_info):
+        res = requests.get(ep_url)
+        d_url = re.search('"url":"(.*?m3u8)"', res.text).group(1).replace('\\', '')
+        route_ep_d_info.append({ep_txt : d_url})
+
+    url_data = requests.get(url)
+    url_list = []
+    soup = BeautifulSoup(url_data.text, 'html.parser')
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        route_ep_d_info = []
+        container = soup.find('ul', {'class' : 'myui-content__list'})
+        processes = []
+        for ep_li in container.find_all('li'):
+            ep_info = ep_li.find('a')
+            ep_url = urljoin(url,ep_info['href'])
+            ep_txt = ep_info.text.strip()
+            processes.append(pool.submit(get_d_url_for_one_ep, ep_url, ep_txt, route_ep_d_info))
+
+    url_list.append(route_ep_d_info)
+
+    video_title = soup.find('h1', {'class' : 'title'}).text.strip()
+    return video_title, url_list
+
 def decode_duonao(url, src_name):
     def get_d_url_for_one_ep(ep_url, ep_txt, route_ep_d_info):
         res = requests.get(ep_url)
@@ -111,7 +137,7 @@ def decode_duonao(url, src_name):
             route_ep_d_info = []
             container = soup.find('div', {'id' : f'route{r}'})
             for ep_button in container.find_all('a'):
-                ep_url = ep_button['href'].replace('../', 'https://duonaolive.com/')
+                ep_url = urljoin(url, ep_button['href'])
                 ep_txt = ep_button.text.strip()
                 pool.submit(get_d_url_for_one_ep, ep_url, ep_txt, route_ep_d_info)
         url_list.append(route_ep_d_info)
@@ -122,10 +148,13 @@ def decode_duonao(url, src_name):
 def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
     xinghe_re = re.compile('hugelive|xinghe')
     duonao_re = re.compile('duonaolive')
+    duboku_re = re.compile('gboku')
     if xinghe_re.search(url):
         video_title, url_list = decode_xinghe(url, src_name)
     elif duonao_re.search(url):
         video_title, url_list = decode_duonao(url, src_name)
+    elif duboku_re.search(url):
+        video_title, url_list = decode_duboku(url, src_name)
     else:
         print(f'URL not supported')
         return []
@@ -137,13 +166,20 @@ def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
         os.makedirs(output_dir)
     return download_infos
 
-def download_task(v, verbose, pbar):
-    d_title = v['title']
-    d_urls = v['urls']
-    d_ep = v['ep']
-    d_file_prefix = v['file_prefix']
-    d_output = v['output']
-    pbar.write(f'Start Downloading {d_title} {d_ep:02d}')
+def download_via_m3u8_downloader(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar):
+    d_file_name = f'{d_output}/{d_file_prefix}{d_ep:02d}.mp4'
+    download_success = False
+    for u in d_urls:
+        if verbose:
+            pbar.write(f'Downloading: {u}')
+        try:
+            m3u8_downloader(u, d_file_name)
+            download_success = True
+        except:
+            pass
+    return download_success
+
+def download_via_youtube_dl(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar):
     ydl_opts = { 
         'nocheckcertificate': True, 
         'outtmpl': f'{d_output}/{d_file_prefix}{d_ep:02d}.%(ext)s',
@@ -171,6 +207,18 @@ def download_task(v, verbose, pbar):
                 pbar.write(f'Error downloading {d_title}: {d_ep} with {u}\nRetry: another url')
             else:
                 pass
+    return download_success
+
+def download_task(v, verbose, pbar):
+    d_title = v['title']
+    d_urls = v['urls']
+    d_ep = v['ep']
+    d_file_prefix = v['file_prefix']
+    d_output = v['output']
+    pbar.write(f'Start Downloading {d_title} {d_ep:02d}')
+
+    #download_success = download_via_youtube_dl(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar)
+    download_success = download_via_m3u8_downloader(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar)
     if download_success:
         pbar.write(f'{d_title} {d_ep} Finish')
     else:
@@ -216,14 +264,17 @@ if __name__ == "__main__":
         print("Download single file must provide both -i and -o")
         sys.exit(2)
 
+    download_infos = []
     if args.read:
         with open(args.read, 'r') as f:
             download_links = yaml.load(f, Loader=yaml.FullLoader)
-        download_infos = []
         for l in download_links:
             download_infos.extend(get_download_infos_from_URL(l['url'], l['path'], args.src, l['prefix'] if 'prefix' in l else ''))
     else:
         download_infos = get_download_infos_from_URL(args.input, args.output, args.src, args.prefix if 'prefix' in args else '')
 
     print(f'{len(download_infos)} video found, start downloading')
+
+    duboku_re = re.compile('gboku')
+    d_func = None
     download_multiple(download_infos, args.verbose)
