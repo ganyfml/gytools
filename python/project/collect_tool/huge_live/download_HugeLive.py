@@ -178,7 +178,8 @@ def download_via_m3u8_downloader(d_output, d_file_prefix, d_ep, d_urls, verbose,
         try:
             m3u8_downloader(u, d_file_name)
             download_success = True
-        except:
+        except Exception as e:
+            pbar.write(f'{d_file_name} fail: {str(e)}')
             pass
     return download_success
 

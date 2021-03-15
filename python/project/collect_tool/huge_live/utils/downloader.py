@@ -1,3 +1,5 @@
+# vim: set noexpandtab tabstop=2 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
+
 import m3u8
 import requests
 from urllib.parse import urlsplit, urljoin
@@ -11,6 +13,8 @@ import time
 
 global GLOBAL_STOP
 GLOBAL_STOP = False
+
+requests.packages.urllib3.disable_warnings() 
 
 class DownloadFailException(Exception):
     def __init__(self, status_code, message='Download failed'):
@@ -41,7 +45,6 @@ def d_ts_segment(url, ts_file, segment):
             time.sleep(5)
 
     if not response or not response.ok:
-        print(f'{url} download failed')
         GLOBAL_STOP = True
         raise DownloadFailException(response.status_code)
     
@@ -68,7 +71,6 @@ def m3u8_downloader(m3u8_url, saved_name):
         processes = []
         for s in m3u8_info.segments:
             s_url = urljoin(m3u8_url, s.uri)
-            print(f'downloading: {m3u8_url} + {s.uri} -> {s_url}')
             ts_file_name = os.path.basename(s_url)
             ts_file = os.path.join(tmp_d, ts_file_name)
             processes.append(e.submit(d_ts_segment, s_url, ts_file, s))
@@ -78,9 +80,12 @@ def m3u8_downloader(m3u8_url, saved_name):
         m3u8_file_name = os.path.join(tmp_d, 'index.m3u8')
         m3u8_info.dump(m3u8_file_name)
         cmd = ['ffmpeg', '-allowed_extensions', 'ALL', '-i', m3u8_file_name, '-c', 'copy', saved_name]
-        ffmpeg_error_code = subprocess.call(cmd)
+        handle = subprocess.Popen(
+                cmd, stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        stdout_data, stderr_data = handle.communicate()
+        ffmpeg_error_code = handle.returncode
 
     rmtree(tmp_d, ignore_errors=True)
-
     if GLOBAL_STOP or ffmpeg_error_code != 0:
         raise Exception('Download failed')
