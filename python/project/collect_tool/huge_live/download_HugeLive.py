@@ -168,6 +168,9 @@ def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
 
 def download_via_m3u8_downloader(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar):
     d_file_name = f'{d_output}/{d_file_prefix}{d_ep:02d}.mp4'
+    if os.path.isfile(d_file_name):
+        return True
+
     download_success = False
     for u in d_urls:
         if verbose:

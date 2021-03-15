@@ -29,7 +29,7 @@ def d_ts_segment(url, ts_file, segment):
     retry_c = 0
     response = None
     while retry_c < 5:
-        response = requests.get(url)
+        response = requests.get(url, verify=False)
         if not response.ok and response.text.find('Cloudflare') != -1:
             scraper = cfscrape.create_scraper()
             response = scraper.get(url)
@@ -50,15 +50,15 @@ def d_ts_segment(url, ts_file, segment):
     segment.uri = ts_file
 
 def m3u8_downloader(m3u8_url, saved_name):
-    m3u8_info = m3u8.load(m3u8_url)
+    m3u8_info = m3u8.load(m3u8_url, verify_ssl=False)
     if len(m3u8_info.playlists) != 0:
         p_list_m3u8_url = urljoin(m3u8_url, m3u8_info.playlists[0].uri)
-        m3u8_info = m3u8.load(p_list_m3u8_url)
+        m3u8_info = m3u8.load(p_list_m3u8_url, verify_ssl=False)
     
     tmp_d = tempfile.mkdtemp()
-    if len(m3u8_info.keys) != 0:
+    if len(m3u8_info.keys) != 0 and m3u8_info.keys[0]:
         key_url = urljoin(m3u8_url, m3u8_info.keys[0].uri)
-        key = requests.get(key_url).content
+        key = requests.get(key_url, verify=False).content
         key_file = os.path.join(tmp_d, 'key.key')
         with open(key_file, 'wb') as f:
             f.write(key)
@@ -68,6 +68,7 @@ def m3u8_downloader(m3u8_url, saved_name):
         processes = []
         for s in m3u8_info.segments:
             s_url = urljoin(m3u8_url, s.uri)
+            print(f'downloading: {m3u8_url} + {s.uri} -> {s_url}')
             ts_file_name = os.path.basename(s_url)
             ts_file = os.path.join(tmp_d, ts_file_name)
             processes.append(e.submit(d_ts_segment, s_url, ts_file, s))
