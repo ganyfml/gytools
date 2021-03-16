@@ -149,21 +149,27 @@ def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
     xinghe_re = re.compile('hugelive|xinghe')
     duonao_re = re.compile('duonaolive')
     duboku_re = re.compile('gboku')
-    if xinghe_re.search(url):
-        video_title, url_list = decode_xinghe(url, src_name)
-    elif duonao_re.search(url):
-        video_title, url_list = decode_duonao(url, src_name)
-    elif duboku_re.search(url):
-        video_title, url_list = decode_duboku(url, src_name)
-    else:
-        print(f'URL not supported')
-        return []
+    download_infos = []
+    try:
+        if xinghe_re.search(url):
+            video_title, url_list = decode_xinghe(url, src_name)
+        elif duonao_re.search(url):
+            video_title, url_list = decode_duonao(url, src_name)
+        elif duboku_re.search(url):
+            video_title, url_list = decode_duboku(url, src_name)
+        else:
+            print(f'URL not supported')
+            return []
 
-    download_infos = organize_download_urls(video_title, output_dir, url_list, file_prefix)
-    print(f'{video_title} analysis complete')
+        download_infos = organize_download_urls(video_title, output_dir, url_list, file_prefix)
+        print(f'{video_title} analysis complete')
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+    except Exception as e:
+        print(f'URL analysis failed: {str(e)}')
+    
     return download_infos
 
 def download_via_m3u8_downloader(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar):
@@ -231,6 +237,10 @@ def download_task(v, verbose, pbar):
     return d_title, d_ep, download_success
 
 def download_multiple(url_list, verbose):
+    if len(url_list) == 0:
+        print('No Video found, exit')
+        return
+
     pbar = tqdm(total=len(url_list), desc='Downloading:')
     error_list = []
     processes = []
