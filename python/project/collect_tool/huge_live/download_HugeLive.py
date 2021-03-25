@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# vim: set noexpandtab tabstop=4 shiftwidth=2 softtabstop=-1 fileencoding=utf-8:
 
 import os
 import threading
@@ -33,11 +35,11 @@ def organize_download_urls(video_title, output_dir, url_list, file_prefix):
             m_value = m[m_raw_key]
             m_key = m_raw_key
             try:
-                m_key = int(m_key)
+                m_key = f'{int(m_key):02d}'
             except ValueError:
                 num_extract = re.findall(r'\d+', m_key)
                 if len(num_extract) == 1:
-                    m_key = int(num_extract[0])
+                    m_key = f'{int(num_extract[0]):02d}'
                 else:
                     pass
             
@@ -45,7 +47,6 @@ def organize_download_urls(video_title, output_dir, url_list, file_prefix):
                 ep2url[m_key].append(m_value)
             else:
                 ep2url[m_key] = [m_value]
-
     for u in url_list[0]:
         d_info = {
              'title': video_title,
@@ -55,16 +56,17 @@ def organize_download_urls(video_title, output_dir, url_list, file_prefix):
         raw_ep = list(u.keys())[0]
         ep = raw_ep
         try:
-            ep = int(raw_ep)
+            ep = f'{int(raw_ep):02d}'
         except:
             num_extract = re.findall(r'\d+', raw_ep)
             if len(num_extract) == 1:
-                ep = int(num_extract[0])
+                ep = f'{int(num_extract[0]):02d}'
             else:
                 pass
         d_info['ep'] = ep
         d_info['urls'] = ep2url[ep]
         download_infos.append(d_info)
+        
     return download_infos
 
 def decode_xinghe(url, src_name):
@@ -173,9 +175,7 @@ def get_download_infos_from_URL(url, output_dir, src_name, file_prefix):
     return download_infos
 
 def download_via_m3u8_downloader(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar):
-    d_file_name = f'{d_output}/{d_file_prefix}{d_ep:02d}.mp4'
-    if os.path.isfile(d_file_name):
-        return True
+    d_file_name = f'{d_output}/{d_file_prefix}{d_ep}.mp4'
 
     download_success = False
     for u in d_urls:
@@ -192,7 +192,7 @@ def download_via_m3u8_downloader(d_output, d_file_prefix, d_ep, d_urls, verbose,
 def download_via_youtube_dl(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar):
     ydl_opts = { 
         'nocheckcertificate': True, 
-        'outtmpl': f'{d_output}/{d_file_prefix}{d_ep:02d}.%(ext)s',
+        'outtmpl': f'{d_output}/{d_file_prefix}{d_ep}.%(ext)s',
         'quiet': True,
         'no_warnings': True,
         'continue_dl': True,
@@ -225,7 +225,7 @@ def download_task(v, verbose, pbar):
     d_ep = v['ep']
     d_file_prefix = v['file_prefix']
     d_output = v['output']
-    pbar.write(f'Start Downloading {d_title} {d_ep:02d}')
+    pbar.write(f'Start Downloading {d_title} {d_ep}')
 
     #download_success = download_via_youtube_dl(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar)
     download_success = download_via_m3u8_downloader(d_output, d_file_prefix, d_ep, d_urls, verbose, pbar)
@@ -251,8 +251,8 @@ def download_multiple(url_list, verbose):
             titile, ep, success = _.result()
             if not success:
                 error_list.append(f'{titile}: {ep}')
-        print(f'{len(error_list)} task failed:')
-        print('\n'.join(error_list))
+        pbar.write(f'{len(error_list)} task failed:')
+        pbar.write('\n'.join(error_list))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Download videos from hugelive.com')
