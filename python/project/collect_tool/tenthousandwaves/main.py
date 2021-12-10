@@ -29,18 +29,19 @@ def check_status():
 	url = 'https://secure.thinkreservations.com/api/hotels/3300/daily_availabilities?start_date=2022-02-22&end_date=2022-02-23'
 	res = requests.get(url)
 	result = {}
-	msg = 'No Room avaiable'
+	msg = 'No Room avaiable\n'
 	for r in res.json():
-		if r['isAvailable']:
-			if r['roomId'] in result:
-				msg = 'Room avaiable'
-				notice_thoughEmail(msg)
-			else:
-				result[r['roomId']] = True
+		if not r['isAvailable']:
+			continue
+		if r['roomId'] in result:
+			msg = 'Room avaiable\n'
+			notice_thoughEmail(msg)
+		else:
+			result[r['roomId']] = True
 	print_to_file(msg)
 
 while True:
 	now = datetime.now()
 	print_to_file(now.strftime("%m/%d/%Y %H:%M:%S") + ':' + '\n')
 	check_status()
-	time.sleep(60)
+	time.sleep(1800)
